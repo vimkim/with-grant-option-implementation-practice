@@ -25,19 +25,26 @@ def make_grant_graph(grant_list):
         grant_graph[grantor].add(grantee)
     return grant_graph
 
-def reachable_from(grant_graph, visited, from_, to_):
 
-    if from_ == to_:
-        return True
-    if from_ in visited:
-        return False
-    visited.add(from_)
-    if from_ not in grant_graph:
-        return False
-    for gtee in grant_graph[from_]:
-        if reachable_from(grant_graph, visited, gtee, to_):
-            return True
-    return False
+def get_unreachables(grant_graph, owner):
+
+    all_nodes = set(grant_graph.keys())
+
+    reachables = set()
+
+    # dfs from owner
+    stack = [owner]
+    while stack:
+        node = stack.pop()
+        if node not in reachables:
+            reachables.add(node)
+            stack.extend(grant_graph[node])
+
+    unreachables = all_nodes - reachables
+    print('reachables:', reachables)
+    print('unreachables:', unreachables)
+    return unreachables
+
 
 
 def revoke(grant_graph, owner, grantor, grantee):
@@ -46,11 +53,11 @@ def revoke(grant_graph, owner, grantor, grantee):
     if grantee in grant_graph[grantor]:
         grant_graph[grantor].remove(grantee)
 
-        for gtee in list(grant_graph[grantee]):
-            if gtee in grant_graph[grantee]:
-                if not reachable_from(grant_graph, set(), owner, gtee):
-                    revoke(grant_graph, owner, grantee, gtee)
+        unreachables = get_unreachables(grant_graph, owner)
 
+        for unreachable in unreachables:
+            if unreachable in grant_graph:
+                del grant_graph[unreachable]
 
 
 def print_grant_graph(grant_graph):
