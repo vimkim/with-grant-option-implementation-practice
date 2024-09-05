@@ -1,7 +1,6 @@
-from typing import Dict
+from typing import Dict, List, Set, Tuple
 
-
-def initialize_grant_list(grant_list):
+def initialize_grant_list(grant_list: List[Tuple[str, str]]) -> Tuple[List[Tuple[str, str]], str]:
     users = "ABCD"
 
     for user in users:
@@ -16,8 +15,8 @@ def initialize_grant_list(grant_list):
 
     return grant_list, owner
 
-def make_grant_graph(grant_list):
-    grant_graph = {}
+def make_grant_graph(grant_list: List[Tuple[str, str]]) -> Dict[str, Set[str]]:
+    grant_graph: Dict[str, Set[str]] = {}
     for grant in grant_list:
         grantor, grantee = grant
         if grantor not in grant_graph:
@@ -25,29 +24,24 @@ def make_grant_graph(grant_list):
         grant_graph[grantor].add(grantee)
     return grant_graph
 
+def get_unreachables(grant_graph: Dict[str, Set[str]], owner: str) -> Set[str]:
+    all_nodes: Set[str] = set(grant_graph.keys())
+    reachables: Set[str] = set()
 
-def get_unreachables(grant_graph, owner):
-
-    all_nodes = set(grant_graph.keys())
-
-    reachables = set()
-
-    # dfs from owner
-    stack = [owner]
+    # DFS from owner
+    stack: List[str] = [owner]
     while stack:
         node = stack.pop()
         if node not in reachables:
             reachables.add(node)
             stack.extend(grant_graph[node])
 
-    unreachables = all_nodes - reachables
+    unreachables: Set[str] = all_nodes - reachables
     print('reachables:', reachables)
     print('unreachables:', unreachables)
     return unreachables
 
-
-
-def revoke(grant_graph, owner, grantor, grantee):
+def revoke(grant_graph: Dict[str, Set[str]], owner: str, grantor: str, grantee: str) -> None:
     print('revoking', grantor, grantee)
 
     if grantee in grant_graph[grantor]:
@@ -59,21 +53,18 @@ def revoke(grant_graph, owner, grantor, grantee):
             if unreachable in grant_graph:
                 del grant_graph[unreachable]
 
-
-def print_grant_graph(grant_graph):
+def print_grant_graph(grant_graph: Dict[str, Set[str]]) -> None:
     for gtor, gtee_set in grant_graph.items():
         print(gtor, gtee_set)
 
+def main() -> None:
+    grant_graph: Dict[str, Set[str]]
 
-def main():
-    grant_graph: Dict
-    print('Hello, World!')
-
-    grant_list = []
+    grant_list: List[Tuple[str, str]] = []
 
     grant_list, owner = initialize_grant_list(grant_list)
 
-    grant_graph: Dict = make_grant_graph(grant_list)
+    grant_graph = make_grant_graph(grant_list)
 
     for gtor, gtee_set in grant_graph.items():
         print(gtor, gtee_set)
@@ -94,10 +85,6 @@ def main():
     print("\nafter revoking E's grant to A\n")
     print_grant_graph(grant_graph)
 
-
-
-
-
-
 if __name__ == '__main__':
     main()
+
